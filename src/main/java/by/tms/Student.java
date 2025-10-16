@@ -1,8 +1,11 @@
 package by.tms;
 
+import org.springframework.stereotype.Component;
+
+@Component("beanStudent") //создал bean этого класса
 public class Student {
-    private String name;
-    private int age;
+    private String name = "Dima";
+    private int age = 18;
 
     public Student() {
     }
