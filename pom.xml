@@ -25,6 +25,13 @@
       <artifactId>spring-context</artifactId>
       <version>6.2.11</version>
     </dependency>
+
+    <!-- Life cicle -->
+    <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+      <version>3.0.0</version>
+    </dependency>
   </dependencies>
   <build>
     <finalName>spring-app</finalName>

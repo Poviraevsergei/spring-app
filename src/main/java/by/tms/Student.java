@@ -2,10 +2,12 @@ package by.tms;
 
 import org.springframework.stereotype.Component;
 
-@Component("beanStudent") //создал bean этого класса
+import java.util.Objects;
+
+@Component //создал bean этого класса
 public class Student {
-    private String name = "Dima";
-    private int age = 18;
+    private String name;
+    private int age;
 
     public Student() {
     }
@@ -29,5 +31,18 @@ public class Student {
 
     public void setAge(int age) {
         this.age = age;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Student student = (Student) o;
+        return age == student.age && Objects.equals(name, student.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, age);
     }
 }
