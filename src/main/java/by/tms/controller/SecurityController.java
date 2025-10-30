@@ -57,13 +57,4 @@ public class SecurityController {
         }
         return "error";
     }
-
-    @ExceptionHandler(UsernameExistsException.class)
-    public ModelAndView usernameExistsException(UsernameExistsException e) {
-        System.out.println("Username exists: " + e.getUsername());
-        ModelAndView modelAndView = new ModelAndView("error");
-        modelAndView.setStatus(HttpStatus.BAD_REQUEST);
-        modelAndView.addObject("errors", "Username " + e.getUsername() + " already exists");
-        return modelAndView;
-    }
 }
