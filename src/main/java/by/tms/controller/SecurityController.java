@@ -1,19 +1,23 @@
 package by.tms.controller;
 
+import by.tms.exception.UsernameExistsException;
 import by.tms.model.User;
 import by.tms.model.dto.UserRegistrationDto;
 import by.tms.service.SecurityService;
 import by.tms.service.UserService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +38,7 @@ public class SecurityController {
     @PostMapping("/registration")
     public String registration(@Valid @ModelAttribute UserRegistrationDto userRegistrationDto,
                                BindingResult bindingResult,
-                               Model model) {
+                               Model model) throws UsernameExistsException {
         if (bindingResult.hasErrors()) {
             List<String> errMessages = new ArrayList<>();
 
@@ -52,5 +56,14 @@ public class SecurityController {
             return "users";
         }
         return "error";
+    }
+
+    @ExceptionHandler(UsernameExistsException.class)
+    public ModelAndView usernameExistsException(UsernameExistsException e) {
+        System.out.println("Username exists: " + e.getUsername());
+        ModelAndView modelAndView = new ModelAndView("error");
+        modelAndView.setStatus(HttpStatus.BAD_REQUEST);
+        modelAndView.addObject("errors", "Username " + e.getUsername() + " already exists");
+        return modelAndView;
     }
 }

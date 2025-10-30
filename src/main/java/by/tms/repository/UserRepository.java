@@ -12,12 +12,14 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class UserRepository {
     private static final String INSERT_USER_SQL = "INSERT INTO users(id, username, user_password, created, changed, age) VALUES (DEFAULT, ?, ?, ?, ?, ?)";
     private static final String SELECT_USERS_SQL = "SELECT * FROM users";
     private static final String SELECT_USER_BY_ID_SQL = "SELECT * FROM users WHERE id = ?";
+    private static final String SELECT_USER_BY_USERNAME_SQL = "SELECT * FROM users WHERE username = ?";
     private static final String REMOVE_USERS_SQL = "CALL remove_users_by_username(?)";
 
     private Connection connection;
@@ -56,6 +58,18 @@ public class UserRepository {
             System.out.println(e.getMessage());
         }
         return new User();
+    }
+
+    public Optional<User> getUserByUsername(String username) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(SELECT_USER_BY_USERNAME_SQL);
+            statement.setString(1, username);
+            ResultSet resultSet = statement.executeQuery();
+            return Optional.of(parseResultSetToUser(resultSet));
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return Optional.empty();
     }
 
     public List<User> parseResultSetToUserList(ResultSet resultSet) throws SQLException {

@@ -1,9 +1,11 @@
 package by.tms.service;
 
+import by.tms.exception.UsernameExistsException;
 import by.tms.model.User;
 import by.tms.model.dto.UserRegistrationDto;
 import by.tms.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.time.LocalDateTime;
 
@@ -15,7 +17,10 @@ public class SecurityService {
         this.userRepository = userRepository;
     }
 
-    public boolean registration(UserRegistrationDto userRegistrationDto) {
+    public boolean registration(UserRegistrationDto userRegistrationDto) throws UsernameExistsException {
+        if (isUsernameUsed(userRegistrationDto.getUsername())){
+            throw new UsernameExistsException(userRegistrationDto.getUsername());
+        }
         User user = new User();
         user.setUsername(userRegistrationDto.getUsername());
         user.setAge(userRegistrationDto.getAge());
@@ -28,5 +33,9 @@ public class SecurityService {
             System.out.println(e.getMessage());
         }
         return false;
+    }
+
+    public boolean isUsernameUsed(String username) {
+        return userRepository.getUserByUsername(username).isPresent();
     }
 }
