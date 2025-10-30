@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
 
@@ -22,10 +23,11 @@ public class UserController {
 
     //Create Read Update Delete
     @GetMapping
-    public String getAllUsers(Model model) {
+    public ModelAndView getAllUsers(ModelAndView model) {
         List<User> allUsers = userService.getAllUsers();
-        model.addAttribute("usersKey", allUsers);
-        return "users";
+        model.setViewName("users");
+        model.addObject("usersKey", allUsers);
+        return model;
     }
 
     @GetMapping("/{id}")
@@ -35,5 +37,3 @@ public class UserController {
         return "user";
     }
 }
-
-//2. Model

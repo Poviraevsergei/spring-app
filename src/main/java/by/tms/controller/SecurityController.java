@@ -1,15 +1,21 @@
 package by.tms.controller;
 
 import by.tms.model.User;
+import by.tms.model.dto.UserRegistrationDto;
 import by.tms.service.SecurityService;
 import by.tms.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -24,12 +30,22 @@ public class SecurityController {
         this.userService = userService;
     }
 
+    //TODO: важна последовательность параметров @Valid -> BindingResult -> Model
     @PostMapping("/registration")
-    public String registration(@RequestParam("username") String username,
-                               @RequestParam("age") int age,
-                               @RequestParam("password") String password,
+    public String registration(@Valid @ModelAttribute UserRegistrationDto userRegistrationDto,
+                               BindingResult bindingResult,
                                Model model) {
-        Boolean result = securityService.registration(username, age, password);
+        if (bindingResult.hasErrors()) {
+            List<String> errMessages = new ArrayList<>();
+
+            for (ObjectError objectError : bindingResult.getAllErrors()) {
+                System.out.println(objectError);
+                errMessages.add(objectError.getDefaultMessage());
+            }
+            model.addAttribute("errors", errMessages);
+            return "error";
+        }
+        Boolean result = securityService.registration(userRegistrationDto);
         if (result) {
             List<User> users = userService.getAllUsers();
             model.addAttribute("usersKey", users );
