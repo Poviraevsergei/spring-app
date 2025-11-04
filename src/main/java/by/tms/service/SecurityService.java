@@ -5,7 +5,6 @@ import by.tms.model.User;
 import by.tms.model.dto.UserRegistrationDto;
 import by.tms.repository.UserRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.time.LocalDateTime;
 

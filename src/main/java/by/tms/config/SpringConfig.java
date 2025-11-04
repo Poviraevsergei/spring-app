@@ -9,7 +9,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
-@EnableWebMvc //Включаем Interceptor, Validation
+//@EnableWebMvc //Включаем Interceptor, Validation
 @ComponentScan("by.tms")
 @Configuration
 public class SpringConfig implements WebMvcConfigurer {
@@ -18,14 +18,6 @@ public class SpringConfig implements WebMvcConfigurer {
 
     public SpringConfig(LogInterceptor logInterceptor) {
         this.logInterceptor = logInterceptor;
-    }
-
-    @Bean
-    public InternalResourceViewResolver getViewResolver() {
-        InternalResourceViewResolver resolver = new InternalResourceViewResolver();
-        resolver.setPrefix("/WEB-INF/views/");
-        resolver.setSuffix(".jsp");
-        return resolver;
     }
 
     @Override

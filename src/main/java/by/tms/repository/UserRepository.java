@@ -2,6 +2,7 @@ package by.tms.repository;
 
 import by.tms.model.User;
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
@@ -24,17 +25,9 @@ public class UserRepository {
 
     private Connection connection;
 
-    @PostConstruct
-    public void init() throws SQLException, ClassNotFoundException {
-        connection = createConnection();
-    }
-
-    public static Connection createConnection() throws SQLException, ClassNotFoundException {
-        //1. Регистрация драйвера
-        Class.forName("org.postgresql.Driver");
-
-        //2. Создание соединения
-        return DriverManager.getConnection("jdbc:postgresql://localhost:5432/groupc36", "userc36", "qwerty");
+    @Autowired
+    public UserRepository(Connection connection) {
+        this.connection = connection;
     }
 
     public List<User> getAllUsers() {

@@ -6,18 +6,13 @@ import by.tms.model.dto.UserRegistrationDto;
 import by.tms.service.SecurityService;
 import by.tms.service.UserService;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.ModelAndView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +29,6 @@ public class SecurityController {
         this.userService = userService;
     }
 
-    //TODO: важна последовательность параметров @Valid -> BindingResult -> Model
     @PostMapping("/registration")
     public String registration(@Valid @ModelAttribute UserRegistrationDto userRegistrationDto,
                                BindingResult bindingResult,
@@ -47,7 +41,7 @@ public class SecurityController {
                 errMessages.add(objectError.getDefaultMessage());
             }
             model.addAttribute("errors", errMessages);
-            return "error";
+            return "error-page";
         }
         Boolean result = securityService.registration(userRegistrationDto);
         if (result) {
@@ -55,6 +49,6 @@ public class SecurityController {
             model.addAttribute("usersKey", users );
             return "users";
         }
-        return "error";
+        return "error-page";
     }
 }
