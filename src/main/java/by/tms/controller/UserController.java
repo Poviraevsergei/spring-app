@@ -23,17 +23,16 @@ public class UserController {
 
     //Create Read Update Delete
     @GetMapping
-    public ModelAndView getAllUsers(ModelAndView model) {
+    public String getAllUsers(Model model) {
         List<User> allUsers = userService.getAllUsers();
-        model.setViewName("users");
-        model.addObject("usersKey", allUsers);
-        return model;
+        model.addAttribute("usersKey", allUsers);
+        return "users-page";
     }
 
     @GetMapping("/{id}")
     public String getUserById(@PathVariable("id") int id, Model model) {
         User user = userService.getUserById(id);
         model.addAttribute("user", user);
-        return "user";
+        return "user-page";
     }
 }
