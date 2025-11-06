@@ -1,5 +1,6 @@
 package by.tms.controller;
 
+import by.tms.model.Role;
 import by.tms.model.User;
 import by.tms.service.UserService;
 import org.springframework.stereotype.Controller;
@@ -25,7 +26,11 @@ public class UserController {
     @GetMapping
     public String getAllUsers(Model model) {
         List<User> allUsers = userService.getAllUsers();
-        model.addAttribute("usersKey", allUsers);
+        model.addAttribute("usersList", allUsers);
+        model.addAttribute("helloKey", "Hello world");
+        model.addAttribute("name", "Darya");
+        model.addAttribute("flag",false);
+        model.addAttribute("role", Role.MODERATOR);
         return "users-page";
     }
 

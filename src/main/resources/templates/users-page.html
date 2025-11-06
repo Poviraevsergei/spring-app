@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>All users</title>
+    <!--<link rel="stylesheet" th:href="~{/css/styles.css}">-->
+</head>
+<body>
+All users:
+Вывод текста(удалят что в теле тэга
+<h1 th:text="${helloKey}">Это видно не будет!</h1>
+
+Вставка текса в тело тега(без удаления)
+<h1 th:inline="text">Меня зовут [[${name}]]</h1>
+
+switch
+<div th:switch="${role.name()}">
+    <div th:case="USER" th:inline="text"> This is USER role. Status:[[${role.getStatus()}]]</div>
+    <div th:case="ADMIN" th:inline="text"> This is ADMIN role. Status:[[${role.getStatus()}]]</div>
+    <div th:case="MODERATOR" th:inline="text"> This is MODERATOR role. Status:[[${role.getStatus()}]]</div>
+    <div th:case="*" th:inline="text">This is not USER, ADMIN, MODERATOR!</div>
+</div>
+
+<!--<script th:src="~{/js/script.js}"/>-->
+
+if else
+<div th:if="${flag}">
+    Message if TRUE
+</div>
+<div th:unless="${flag}">
+    Message if FALSE
+</div>
+
+<a th:href="@{/user/22}">User number 22</a>
+
+Обход циклом
+<ul th:each="user : ${usersList}" th:object="${user}">
+    <li th:inline="text">ID: [[*{id}]]</li>
+    <li th:inline="text">Username: [[*{username}]]</li>
+    <li th:inline="text">Age: [[*{age}]]</li>
+    <li th:inline="text">Created: [[*{created}]]</li>
+    <li th:inline="text">Changed: [[*{changed}]]</li>
+    <h1>------------------</h1>
+</ul>
+</body>
+</html>
