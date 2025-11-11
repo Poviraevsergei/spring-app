@@ -13,11 +13,12 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Controller
+@RestController
 @RequestMapping("/security")
 public class SecurityController {
 
@@ -29,6 +30,9 @@ public class SecurityController {
         this.userService = userService;
     }
 
+    //TODO: CRUD Security
+
+    //TODO: change registration
     @PostMapping("/registration")
     public String registration(@Valid @ModelAttribute UserRegistrationDto userRegistrationDto,
                                BindingResult bindingResult,

@@ -21,13 +21,14 @@ public class SecurityService {
             throw new UsernameExistsException(userRegistrationDto.getUsername());
         }
         User user = new User();
-        user.setUsername(userRegistrationDto.getUsername());
+        //user.setUsername(userRegistrationDto.getUsername());
         user.setAge(userRegistrationDto.getAge());
         user.setCreated(LocalDateTime.now());
         user.setChanged(LocalDateTime.now());
 
         try {
-            return userRepository.addUser(user, userRegistrationDto.getPassword()) > 0;
+           // return userRepository.addUser(user, userRegistrationDto.getPassword()) > 0;
+            return false;
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }

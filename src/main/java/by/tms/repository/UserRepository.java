@@ -1,6 +1,7 @@
 package by.tms.repository;
 
 import by.tms.model.User;
+import by.tms.model.dto.UserCreateDto;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -17,13 +18,14 @@ import java.util.Optional;
 
 @Repository
 public class UserRepository {
-    private static final String INSERT_USER_SQL = "INSERT INTO users(id, username, user_password, created, changed, age) VALUES (DEFAULT, ?, ?, ?, ?, ?)";
+    private static final String INSERT_USER_SQL = "INSERT INTO users(id, first_name, second_name, created, changed, age, email) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?)";
     private static final String SELECT_USERS_SQL = "SELECT * FROM users";
     private static final String SELECT_USER_BY_ID_SQL = "SELECT * FROM users WHERE id = ?";
     private static final String SELECT_USER_BY_USERNAME_SQL = "SELECT * FROM users WHERE username = ?";
-    private static final String REMOVE_USERS_SQL = "CALL remove_users_by_username(?)";
+    private static final String REMOVE_USER_BY_ID = "DELETE FROM users WHERE id = ?";
 
     private Connection connection;
+    private final int ONE_LINE_FROM_DB = 1;
 
     @Autowired
     public UserRepository(Connection connection) {
@@ -41,7 +43,7 @@ public class UserRepository {
         return new ArrayList<>();
     }
 
-    public User getUserById(int id) {
+    public Optional<User> getUserById(int id) {
         try {
             PreparedStatement statement = connection.prepareStatement(SELECT_USER_BY_ID_SQL);
             statement.setInt(1, id);
@@ -50,7 +52,7 @@ public class UserRepository {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-        return new User();
+        return Optional.empty();
     }
 
     public Optional<User> getUserByUsername(String username) {
@@ -58,7 +60,7 @@ public class UserRepository {
             PreparedStatement statement = connection.prepareStatement(SELECT_USER_BY_USERNAME_SQL);
             statement.setString(1, username);
             ResultSet resultSet = statement.executeQuery();
-            return Optional.of(parseResultSetToUser(resultSet));
+            return parseResultSetToUser(resultSet);
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -68,40 +70,56 @@ public class UserRepository {
     public List<User> parseResultSetToUserList(ResultSet resultSet) throws SQLException {
         List<User> userList = new ArrayList<>();
         while (resultSet.next()) {
-            User user = new User();
-            user.setId(resultSet.getInt("id"));
-            user.setUsername(resultSet.getString("username"));
-            user.setCreated(resultSet.getTimestamp("created").toLocalDateTime());
-            user.setChanged(resultSet.getTimestamp("changed").toLocalDateTime());
-            user.setAge(resultSet.getInt("age"));
-            userList.add(user);
+            userList.add(fillUser(resultSet));
         }
         return userList;
     }
 
-    public User parseResultSetToUser(ResultSet resultSet) throws SQLException {
+    public Optional<User> parseResultSetToUser(ResultSet resultSet) throws SQLException {
         if (resultSet.next()) {
-        User user = new User();
-        user.setId(resultSet.getInt("id"));
-        user.setUsername(resultSet.getString("username"));
-        user.setCreated(resultSet.getTimestamp("created").toLocalDateTime());
-        user.setChanged(resultSet.getTimestamp("changed").toLocalDateTime());
-        user.setAge(resultSet.getInt("age"));
-
-        return user;
+            return Optional.of(fillUser(resultSet));
         }
-        return new User();
+        return Optional.empty();
     }
 
-    public int addUser(User user, String password) throws SQLException {
-        PreparedStatement statement = connection.prepareStatement(INSERT_USER_SQL);
-        statement.setString(1, user.getUsername());
-        statement.setString(2, password);
-        statement.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
-        statement.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
-        statement.setInt(5, user.getAge());
+    public boolean addUser(UserCreateDto user) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(INSERT_USER_SQL);
+            statement.setString(1, user.getFirstName());
+            statement.setString(2, user.getSecondName());
+            statement.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+            statement.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+            statement.setInt(5, user.getAge());
+            statement.setString(6, user.getEmail());
 
-        return statement.executeUpdate();
+            return statement.executeUpdate() == ONE_LINE_FROM_DB;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return false;
+    }
+
+    public User fillUser(ResultSet resultSet) throws SQLException {
+        User user = new User();
+        user.setId(resultSet.getInt("id"));
+        user.setAge(resultSet.getInt("age"));
+        user.setFirstName(resultSet.getString("first_name"));
+        user.setSecondName(resultSet.getString("second_name"));
+        user.setEmail(resultSet.getString("email"));
+        user.setCreated(resultSet.getTimestamp("created").toLocalDateTime());
+        user.setChanged(resultSet.getTimestamp("changed").toLocalDateTime());
+        return user;
+    }
+
+    public boolean removeUserById(int id) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(REMOVE_USER_BY_ID);
+            statement.setInt(1, id);
+            return statement.executeUpdate() == ONE_LINE_FROM_DB;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return false;
     }
 }
 

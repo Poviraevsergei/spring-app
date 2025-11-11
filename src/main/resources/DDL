@@ -1,0 +1,45 @@
+create table public.users
+(
+    id          bigserial
+        constraint users_pk
+            primary key,
+    first_name  varchar(100)                                 not null,
+    created     timestamp(6)                                 not null,
+    changed     timestamp(6),
+    age         integer default 18,
+    email       varchar(30),
+    second_name varchar default 'DEFAULT'::character varying not null
+);
+
+alter table public.users
+    owner to postgres;
+
+create trigger add_user_trg
+    after insert
+    on public.users
+    for each row
+execute procedure public.add_to_log();
+
+create table public.security
+(
+    id       bigserial
+        constraint security_pk
+            primary key,
+    password varchar                                        not null,
+    role     varchar default 'UNDEFINED'::character varying not null,
+    user_id  bigint                                         not null
+        constraint security_users_id_fk
+            references public.users
+            on update cascade on delete cascade,
+    username varchar                                        not null
+);
+
+alter table public.security
+    owner to userc36;
+
+create unique index security__index_username
+    on public.security (username);
+
+create unique index security__index_user_id
+    on public.security (user_id);
+
