@@ -1,13 +1,14 @@
 package by.tms.repository;
 
+import by.tms.model.Role;
+import by.tms.model.Security;
 import by.tms.model.User;
 import by.tms.model.dto.UserCreateDto;
-import jakarta.annotation.PostConstruct;
+import by.tms.util.SqlList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,13 +19,8 @@ import java.util.Optional;
 
 @Repository
 public class UserRepository {
-    private static final String INSERT_USER_SQL = "INSERT INTO users(id, first_name, second_name, created, changed, age, email) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?)";
-    private static final String SELECT_USERS_SQL = "SELECT * FROM users";
-    private static final String SELECT_USER_BY_ID_SQL = "SELECT * FROM users WHERE id = ?";
-    private static final String SELECT_USER_BY_USERNAME_SQL = "SELECT * FROM users WHERE username = ?";
-    private static final String REMOVE_USER_BY_ID = "DELETE FROM users WHERE id = ?";
 
-    private Connection connection;
+    private final Connection connection;
     private final int ONE_LINE_FROM_DB = 1;
 
     @Autowired
@@ -34,7 +30,7 @@ public class UserRepository {
 
     public List<User> getAllUsers() {
         try {
-            PreparedStatement statement = connection.prepareStatement(SELECT_USERS_SQL);
+            PreparedStatement statement = connection.prepareStatement(SqlList.SELECT_USERS_SQL);
             ResultSet resultSet = statement.executeQuery();
             return parseResultSetToUserList(resultSet);
         } catch (SQLException e) {
@@ -45,20 +41,8 @@ public class UserRepository {
 
     public Optional<User> getUserById(int id) {
         try {
-            PreparedStatement statement = connection.prepareStatement(SELECT_USER_BY_ID_SQL);
+            PreparedStatement statement = connection.prepareStatement(SqlList.SELECT_USER_BY_ID_SQL);
             statement.setInt(1, id);
-            ResultSet resultSet = statement.executeQuery();
-            return parseResultSetToUser(resultSet);
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-        return Optional.empty();
-    }
-
-    public Optional<User> getUserByUsername(String username) {
-        try {
-            PreparedStatement statement = connection.prepareStatement(SELECT_USER_BY_USERNAME_SQL);
-            statement.setString(1, username);
             ResultSet resultSet = statement.executeQuery();
             return parseResultSetToUser(resultSet);
         } catch (SQLException e) {
@@ -84,7 +68,7 @@ public class UserRepository {
 
     public boolean addUser(UserCreateDto user) {
         try {
-            PreparedStatement statement = connection.prepareStatement(INSERT_USER_SQL);
+            PreparedStatement statement = connection.prepareStatement(SqlList.INSERT_USER_SQL);
             statement.setString(1, user.getFirstName());
             statement.setString(2, user.getSecondName());
             statement.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
@@ -113,8 +97,23 @@ public class UserRepository {
 
     public boolean removeUserById(int id) {
         try {
-            PreparedStatement statement = connection.prepareStatement(REMOVE_USER_BY_ID);
+            PreparedStatement statement = connection.prepareStatement(SqlList.REMOVE_USER_BY_ID);
             statement.setInt(1, id);
+            return statement.executeUpdate() == ONE_LINE_FROM_DB;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean updateUser(User user) {
+        try {
+            PreparedStatement statement = connection.prepareStatement(SqlList.UPDATE_USER_BY_ID);
+            statement.setString(1, user.getFirstName());
+            statement.setString(2, user.getSecondName());
+            statement.setInt(3, user.getAge());
+            statement.setString(4, user.getEmail());
+            statement.setInt(5, user.getId());
             return statement.executeUpdate() == ONE_LINE_FROM_DB;
         } catch (SQLException e) {
             System.out.println(e.getMessage());

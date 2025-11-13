@@ -6,6 +6,7 @@ import by.tms.model.dto.UserRegistrationDto;
 import by.tms.service.SecurityService;
 import by.tms.service.UserService;
 import jakarta.validation.Valid;
+import jakarta.validation.ValidationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -32,11 +33,9 @@ public class SecurityController {
 
     //TODO: CRUD Security
 
-    //TODO: change registration
     @PostMapping("/registration")
     public String registration(@Valid @ModelAttribute UserRegistrationDto userRegistrationDto,
-                               BindingResult bindingResult,
-                               Model model) throws UsernameExistsException {
+                               BindingResult bindingResult) throws UsernameExistsException {
         if (bindingResult.hasErrors()) {
             List<String> errMessages = new ArrayList<>();
 
@@ -44,8 +43,7 @@ public class SecurityController {
                 System.out.println(objectError);
                 errMessages.add(objectError.getDefaultMessage());
             }
-            model.addAttribute("errors", errMessages);
-            return "error-page";
+            throw new ValidationException(String.valueOf(errMessages));
         }
         Boolean result = securityService.registration(userRegistrationDto);
         if (result) {

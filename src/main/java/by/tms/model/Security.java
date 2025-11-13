@@ -1,5 +1,8 @@
 package by.tms.model;
 
+import lombok.Data;
+
+@Data
 public class Security {
     private int id;
     private String username;

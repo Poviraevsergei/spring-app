@@ -1,5 +1,6 @@
 package by.tms.service;
 
+import by.tms.exception.UserNotFoundException;
 import by.tms.model.User;
 import by.tms.model.dto.UserCreateDto;
 import by.tms.repository.UserRepository;
@@ -35,5 +36,14 @@ public class UserService {
             return userFromDb.isEmpty();
         }
         return false;
+    }
+
+    public Optional<User> updateUser(User user){
+        Optional<User> userFromDbOptional = getUserById(user.getId());
+        if (userFromDbOptional.isPresent() && userRepository.updateUser(user)) {
+            return userRepository.getUserById(user.getId());
+        } else {
+            throw new UserNotFoundException(user);
+        }
     }
 }
