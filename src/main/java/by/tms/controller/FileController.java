@@ -1,5 +1,7 @@
 package by.tms.controller;
 
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -61,6 +63,7 @@ public class FileController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+    @Hidden
     @GetMapping
     public ResponseEntity<List<String>> getAllFileNames() {
         try {
@@ -76,6 +79,7 @@ public class FileController {
         return new ResponseEntity<>(HttpStatus.CONFLICT);
     }
 
+    @Tag(name = "remove-endpoints")
     @DeleteMapping("/{filename}")
     public ResponseEntity<String> delete(@PathVariable String filename) {
         Path pathToFile = ROOT_FILE_PATH.resolve(filename);

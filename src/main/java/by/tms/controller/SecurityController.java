@@ -7,8 +7,6 @@ import by.tms.service.SecurityService;
 import by.tms.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -48,7 +46,7 @@ public class SecurityController {
         Boolean result = securityService.registration(userRegistrationDto);
         if (result) {
             List<User> users = userService.getAllUsers();
-            model.addAttribute("usersKey", users );
+            //model.addAttribute("usersKey", users );
             return "users";
         }
         return "error-page";

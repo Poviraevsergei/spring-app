@@ -1,14 +1,16 @@
 package by.tms.controller;
 
-import by.tms.model.Role;
 import by.tms.model.User;
 import by.tms.model.dto.UserCreateDto;
 import by.tms.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,6 +33,14 @@ public class UserController {
         this.userService = userService;
     }
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Успешный статус код, значит пользователей нет в системе"),
+            @ApiResponse(responseCode = "200", description = "Успешный, вернет лист из пользователей"),
+            @ApiResponse(responseCode = "500", description = "Какие-то проблемы со стороны сервера")
+    })
+    @Operation(method = "GET",
+            summary = "Возвращает всех пользователей",
+            description = "Делает запрос в БД и возвращает лист из пользователей(не проходит фильтрацию)")
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userService.getAllUsers();
@@ -40,8 +50,11 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
+    @Operation(method = "GET",
+            summary = "Возвращает пользователя по id",
+            description = "Делает запрос в БД и возвращает пользователя по id(не проходит фильтрацию)")
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable("id") int id) {
+    public ResponseEntity<User> getUserById(@Parameter(description = "Id пользователя в системе") @PathVariable("id") int id) {
         Optional<User> user = userService.getUserById(id);
         if (user.isPresent()) {
             return ResponseEntity.ok(user.get());
@@ -57,6 +70,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CONFLICT).build();
     }
 
+    @Tag(name = "remove-endpoints")
     @DeleteMapping("/{id}")
     public ResponseEntity<HttpStatusCode> deleteUser(@PathVariable("id") int id) {
         if (userService.removeUserById(id)) {
