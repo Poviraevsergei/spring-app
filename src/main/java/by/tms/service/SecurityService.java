@@ -1,6 +1,8 @@
 package by.tms.service;
 
 import by.tms.exception.UsernameExistsException;
+import by.tms.model.Role;
+import by.tms.model.Security;
 import by.tms.model.User;
 import by.tms.model.dto.UserRegistrationDto;
 import by.tms.repository.SecurityRepository;
@@ -23,16 +25,8 @@ public class SecurityService {
         if (isUsernameUsed(userRegistrationDto.getUsername())){
             throw new UsernameExistsException(userRegistrationDto.getUsername());
         }
-        //TODO: registration
-        User user = new User();
-        //user.setUsername(userRegistrationDto.getUsername());
-        user.setAge(userRegistrationDto.getAge());
-        user.setCreated(LocalDateTime.now());
-        user.setChanged(LocalDateTime.now());
-
         try {
-           // return userRepository.addUser(user, userRegistrationDto.getPassword()) > 0;
-            return false;
+            return securityRepository.registration(userRegistrationDto);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }

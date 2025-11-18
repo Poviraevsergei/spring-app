@@ -1,6 +1,7 @@
 package by.tms.model.dto;
 
 import by.tms.annotation.CustomAge;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -18,6 +19,37 @@ public class UserRegistrationDto {
 
     @CustomAge
     private Integer age;
+
+    @Email
+    private String email;
+    @NotBlank
+    private String firstName;
+    @NotBlank
+    private String secondName;
+
+    public @NotBlank String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(@NotBlank String firstName) {
+        this.firstName = firstName;
+    }
+
+    public @NotBlank String getSecondName() {
+        return secondName;
+    }
+
+    public void setSecondName(@NotBlank String secondName) {
+        this.secondName = secondName;
+    }
+
+    public @Email String getEmail() {
+        return email;
+    }
+
+    public void setEmail(@Email String email) {
+        this.email = email;
+    }
 
     public String getUsername() {
         return username;

@@ -1,16 +1,18 @@
 package by.tms.controller;
 
 import by.tms.exception.UsernameExistsException;
-import by.tms.model.User;
 import by.tms.model.dto.UserRegistrationDto;
 import by.tms.service.SecurityService;
 import by.tms.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,8 +34,8 @@ public class SecurityController {
     //TODO: CRUD Security
 
     @PostMapping("/registration")
-    public String registration(@Valid @ModelAttribute UserRegistrationDto userRegistrationDto,
-                               BindingResult bindingResult) throws UsernameExistsException {
+    public ResponseEntity<HttpStatusCode> registration(@Valid @RequestBody UserRegistrationDto userRegistrationDto,
+                                                       BindingResult bindingResult) throws UsernameExistsException {
         if (bindingResult.hasErrors()) {
             List<String> errMessages = new ArrayList<>();
 
@@ -43,12 +45,9 @@ public class SecurityController {
             }
             throw new ValidationException(String.valueOf(errMessages));
         }
-        Boolean result = securityService.registration(userRegistrationDto);
-        if (result) {
-            List<User> users = userService.getAllUsers();
-            //model.addAttribute("usersKey", users );
-            return "users";
+        if (securityService.registration(userRegistrationDto)) {
+            return ResponseEntity.noContent().build();
         }
-        return "error-page";
+        return ResponseEntity.status(HttpStatus.CONFLICT).build();
     }
 }
