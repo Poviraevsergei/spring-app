@@ -26,22 +26,22 @@ public class UserService {
     }
 
     public boolean addUser(UserCreateDto user) {
-        return userRepository.addUser(user);
+        return userRepository.addUser(user).getId() != null;
     }
 
     public boolean removeUserById(int id) {
-        Optional<User> userFromDb = getUserById(id);
-        if (userFromDb.isPresent() && userRepository.removeUserById(id)) {
-            userFromDb = getUserById(id);
-            return userFromDb.isEmpty();
+        if (getUserById(id).isEmpty()) {
+            throw new UserNotFoundException(id);
         }
-        return false;
+        userRepository.removeUserById(id);
+        Optional<User> userFromDb = getUserById(id);
+        return userFromDb.isEmpty();
     }
 
-    public Optional<User> updateUser(User user){
+    public Optional<User> updateUser(User user) {
         Optional<User> userFromDbOptional = getUserById(user.getId());
-        if (userFromDbOptional.isPresent() && userRepository.updateUser(user)) {
-            return userRepository.getUserById(user.getId());
+        if (userFromDbOptional.isPresent()) {
+            return userRepository.updateUser(user);
         } else {
             throw new UserNotFoundException(user);
         }

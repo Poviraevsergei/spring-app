@@ -9,8 +9,15 @@ public class UserNotFoundException extends RuntimeException {
         this.user = user;
     }
 
+    public UserNotFoundException(int id) {
+        super();
+        User user = new User();
+        user.setId(id);
+        this.user = user;
+    }
+
     @Override
     public String toString() {
-        return "UserNotFoundException{" + user.toString() + "}";
+        return "UserNotFoundException{user with id = " + user.getId() + " not found}";
     }
 }

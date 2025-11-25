@@ -32,11 +32,10 @@ public class SecurityController {
     }
 
     //TODO: CRUD Security
-
     @PostMapping("/registration")
     public ResponseEntity<HttpStatusCode> registration(@Valid @RequestBody UserRegistrationDto userRegistrationDto,
                                                        BindingResult bindingResult) throws UsernameExistsException {
-        if (bindingResult.hasErrors()) {
+        if (!bindingResult.hasErrors()) {
             List<String> errMessages = new ArrayList<>();
 
             for (ObjectError objectError : bindingResult.getAllErrors()) {
