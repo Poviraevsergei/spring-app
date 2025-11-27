@@ -51,7 +51,7 @@ public class SecurityRepository {
             }
 
             Security security = new Security();
-            security.setUserId(user.getId());
+            security.setUser(user);
             security.setUsername(dto.getUsername());
             security.setPassword(dto.getPassword());
             security.setRole(Role.USER);
@@ -64,5 +64,9 @@ public class SecurityRepository {
             session.getTransaction().rollback();
             return false;
         }
+    }
+
+    public Optional<Security> getSecurityById(int id) {
+        return Optional.ofNullable(session.find(Security.class, id));
     }
 }

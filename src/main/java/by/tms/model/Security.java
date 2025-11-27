@@ -1,17 +1,25 @@
 package by.tms.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity(name = "security")
 @Data
+@EqualsAndHashCode(exclude = "user")
+@ToString(exclude = "user")
 @NoArgsConstructor
 public class Security {
 
@@ -22,9 +30,11 @@ public class Security {
     private String username;
     private String password;
 
-    @Column(name = "user_id", unique = true, nullable = false)
-    private int userId;
-
     @Enumerated(EnumType.STRING)
     private Role role;
+
+
+    @OneToOne(optional = false)
+    @JoinColumn(name = "user_id")
+    private User user;
 }
