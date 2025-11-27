@@ -2,6 +2,7 @@ package by.tms.controller;
 
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -25,6 +26,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/file")
 public class FileController {
@@ -40,7 +42,7 @@ public class FileController {
             Files.copy(multipartFile.getInputStream(), ROOT_FILE_PATH.resolve(multipartFile.getOriginalFilename()));
             return new ResponseEntity<>(HttpStatus.CREATED);
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            log.error(e.getMessage());
         }
         return new ResponseEntity<>(HttpStatus.CONFLICT);
     }
@@ -58,7 +60,7 @@ public class FileController {
                 return new ResponseEntity<>(resource, headers, HttpStatus.OK);
             }
         } catch (MalformedURLException e) {
-            System.out.println(e.getMessage());
+            log.error(e.getMessage());
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
@@ -74,7 +76,7 @@ public class FileController {
                     .toList();
             return new ResponseEntity<>(fileNames, HttpStatus.OK);
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            log.error(e.getMessage());
         }
         return new ResponseEntity<>(HttpStatus.CONFLICT);
     }

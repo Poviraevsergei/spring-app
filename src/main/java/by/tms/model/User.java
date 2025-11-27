@@ -6,7 +6,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import lombok.Data;
-import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;

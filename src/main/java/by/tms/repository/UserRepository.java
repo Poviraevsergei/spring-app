@@ -2,7 +2,7 @@ package by.tms.repository;
 
 import by.tms.model.User;
 import by.tms.model.dto.UserCreateDto;
-import jakarta.persistence.EntityManager;
+import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -13,19 +13,19 @@ import java.util.Optional;
 @Repository
 public class UserRepository {
 
-    private final EntityManager entityManager;
+    private final Session session;
 
     @Autowired
-    public UserRepository(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    public UserRepository(Session session) {
+        this.session = session;
     }
 
     public List<User> getAllUsers() {
-        return entityManager.createQuery("from users", User.class).getResultList(); //JPQL
+        return session.createQuery("from users", User.class).getResultList(); //JPQL
     }
 
     public Optional<User> getUserById(int id) {
-        return Optional.ofNullable(entityManager.find(User.class, id));
+        return Optional.ofNullable(session.find(User.class, id));
     }
 
     public User addUser(UserCreateDto userDto) {
@@ -37,26 +37,26 @@ public class UserRepository {
         user.setCreated(LocalDateTime.now());
         user.setChanged(LocalDateTime.now());
 
-        entityManager.getTransaction().begin();
-        entityManager.persist(user);
-        entityManager.getTransaction().commit();
+        session.getTransaction().begin();
+        session.persist(user);
+        session.getTransaction().commit();
         return user;
     }
 
     public void removeUserById(int id) {
-        entityManager.getTransaction().begin();
-        entityManager.remove(entityManager.find(User.class, id));
-        entityManager.getTransaction().commit();
+        session.getTransaction().begin();
+        session.remove(session.find(User.class, id));
+        session.getTransaction().commit();
     }
 
     public Optional<User> updateUser(User user) {
         Optional<User> userFromDatabase = getUserById(user.getId());
         if (userFromDatabase.isPresent()) {
-            entityManager.getTransaction().begin();
+            session.getTransaction().begin();
             user.setCreated(userFromDatabase.get().getCreated());
             user.setChanged(LocalDateTime.now());
-            Optional<User> updatedUser = Optional.ofNullable(entityManager.merge(user));
-            entityManager.getTransaction().commit();
+            Optional<User> updatedUser = Optional.ofNullable(session.merge(user));
+            session.getTransaction().commit();
             return updatedUser;
         }
         return Optional.empty();

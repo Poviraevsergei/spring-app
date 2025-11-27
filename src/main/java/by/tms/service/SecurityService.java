@@ -1,16 +1,12 @@
 package by.tms.service;
 
 import by.tms.exception.UsernameExistsException;
-import by.tms.model.Role;
-import by.tms.model.Security;
-import by.tms.model.User;
 import by.tms.model.dto.UserRegistrationDto;
 import by.tms.repository.SecurityRepository;
 import by.tms.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-
+@Slf4j
 @Service
 public class SecurityService {
     private final UserRepository userRepository;
@@ -28,7 +24,7 @@ public class SecurityService {
         try {
             return securityRepository.registration(userRegistrationDto);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            log.error(e.getMessage());
         }
         return false;
     }
