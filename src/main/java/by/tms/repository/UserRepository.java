@@ -3,6 +3,8 @@ package by.tms.repository;
 import by.tms.model.User;
 import by.tms.model.dto.UserCreateDto;
 import org.hibernate.Session;
+import org.hibernate.query.MutationQuery;
+import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -21,14 +23,17 @@ public class UserRepository {
     }
 
     public List<User> getAllUsers() {
-        return session.createQuery("from users", User.class).getResultList(); //JPQL
+        return session.createQuery("from users", User.class).getResultList(); //HQL
     }
 
     public Optional<User> getUserById(int id) {
-        return Optional.ofNullable(session.find(User.class, id));
+        Query<User> query = session.createQuery("from users where id = :id", User.class);
+        query.setParameter("id", id);
+        return Optional.ofNullable(query.uniqueResult());
     }
 
     public User addUser(UserCreateDto userDto) {
+        // Не предназначено для добавления строк только для переноса из других таблиц
         User user = new User();
         user.setEmail(userDto.getEmail());
         user.setFirstName(userDto.getFirstName());
@@ -45,22 +50,32 @@ public class UserRepository {
 
     public void removeUserById(int id) {
         session.getTransaction().begin();
-        session.remove(session.find(User.class, id));
+        session.createMutationQuery("delete from users where id = :id").setParameter("id", id).executeUpdate();
         session.getTransaction().commit();
     }
 
     public Optional<User> updateUser(User user) {
-        Optional<User> userFromDatabase = getUserById(user.getId());
-        if (userFromDatabase.isPresent()) {
+        String hql = "from users where id = :id";
+        Optional<User> beforeUpdateUserFromDatabase = Optional.ofNullable(session.createQuery(hql, User.class).setParameter("id", user.getId()).uniqueResult());
+
+        if (beforeUpdateUserFromDatabase.isPresent()) {
             session.getTransaction().begin();
-            user.setCreated(userFromDatabase.get().getCreated());
-            user.setChanged(LocalDateTime.now());
-            Optional<User> updatedUser = Optional.ofNullable(session.merge(user));
+            session.evict(beforeUpdateUserFromDatabase.get()); //Очистка юзера из кэша
+            MutationQuery query = session.createMutationQuery("update users set firstName=:firstName, secondName=:secondName, age=:age, email=:email, created=:created, changed=:changed where id=:id");
+            query.setParameter("firstName", user.getFirstName());
+            query.setParameter("secondName", user.getSecondName());
+            query.setParameter("age", user.getAge());
+            query.setParameter("email", user.getEmail());
+            query.setParameter("created", beforeUpdateUserFromDatabase.get().getCreated());
+            query.setParameter("changed", LocalDateTime.now());
+            query.setParameter("id", user.getId());
+            query.executeUpdate();
+
+            User afterUpdateUserFromDatabase = session.createQuery(hql, User.class).setParameter("id", user.getId()).uniqueResult();
             session.getTransaction().commit();
-            return updatedUser;
+            return Optional.ofNullable(afterUpdateUserFromDatabase);
         }
         return Optional.empty();
     }
 }
-
 
