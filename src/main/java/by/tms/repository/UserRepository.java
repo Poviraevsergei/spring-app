@@ -2,9 +2,15 @@ package by.tms.repository;
 
 import by.tms.model.User;
 import by.tms.model.dto.UserCreateDto;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaDelete;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.CriteriaUpdate;
+import jakarta.persistence.criteria.Root;
 import org.hibernate.Session;
 import org.hibernate.query.MutationQuery;
 import org.hibernate.query.Query;
+import org.hibernate.query.criteria.CriteriaDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -23,12 +29,27 @@ public class UserRepository {
     }
 
     public List<User> getAllUsers() {
-        return session.createQuery("from users", User.class).getResultList(); //HQL
+        //Создание Criteria Builder
+        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+
+        //Создание Criteria
+        CriteriaQuery<User> criteriaQuery = criteriaBuilder.createQuery(User.class);
+        Root<User> root = criteriaQuery.from(User.class);
+        criteriaQuery.select(root);
+
+        return session.createQuery(criteriaQuery).getResultList();
     }
 
     public Optional<User> getUserById(int id) {
-        Query<User> query = session.createQuery("from users where id = :id", User.class);
-        query.setParameter("id", id);
+        //Создание Criteria Builder
+        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+
+        //Создание Criteria
+        CriteriaQuery<User> criteriaQuery = criteriaBuilder.createQuery(User.class);
+        Root<User> root = criteriaQuery.from(User.class);
+        criteriaQuery.select(root).where(criteriaBuilder.equal(root.get("id"), id));  //SELECT * FROM users WHERE id=?
+
+        Query<User> query = session.createQuery(criteriaQuery);
         return Optional.ofNullable(query.uniqueResult());
     }
 
@@ -49,29 +70,47 @@ public class UserRepository {
     }
 
     public void removeUserById(int id) {
+        //Создание Criteria Builder
+        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+
+        //Создание Criteria
+        CriteriaDelete<User> criteriaQuery = criteriaBuilder.createCriteriaDelete(User.class);
+        Root<User> root = criteriaQuery.from(User.class);
+        criteriaQuery.where(criteriaBuilder.equal(root.get("id"), id));
+
         session.getTransaction().begin();
-        session.createMutationQuery("delete from users where id = :id").setParameter("id", id).executeUpdate();
+        session.createMutationQuery(criteriaQuery).setParameter("id", id).executeUpdate();
         session.getTransaction().commit();
     }
 
     public Optional<User> updateUser(User user) {
-        String hql = "from users where id = :id";
-        Optional<User> beforeUpdateUserFromDatabase = Optional.ofNullable(session.createQuery(hql, User.class).setParameter("id", user.getId()).uniqueResult());
+        //Создание Criteria Builder
+        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+
+        //Создание Criteria
+        CriteriaQuery<User> getQuery = criteriaBuilder.createQuery(User.class);
+        CriteriaUpdate<User> updateQuery = criteriaBuilder.createCriteriaUpdate(User.class);
+        Root<User> rootUpdate = updateQuery.from(User.class);
+        Root<User> rootGet = getQuery.from(User.class);
+
+        getQuery.select(rootGet).where(criteriaBuilder.equal(rootGet.get("id"), user.getId()));
+
+        Optional<User> beforeUpdateUserFromDatabase = Optional.ofNullable(session.createQuery(getQuery).uniqueResult());
 
         if (beforeUpdateUserFromDatabase.isPresent()) {
             session.getTransaction().begin();
             session.evict(beforeUpdateUserFromDatabase.get()); //Очистка юзера из кэша
-            MutationQuery query = session.createMutationQuery("update users set firstName=:firstName, secondName=:secondName, age=:age, email=:email, created=:created, changed=:changed where id=:id");
-            query.setParameter("firstName", user.getFirstName());
-            query.setParameter("secondName", user.getSecondName());
-            query.setParameter("age", user.getAge());
-            query.setParameter("email", user.getEmail());
-            query.setParameter("created", beforeUpdateUserFromDatabase.get().getCreated());
-            query.setParameter("changed", LocalDateTime.now());
-            query.setParameter("id", user.getId());
-            query.executeUpdate();
+            updateQuery.set(rootUpdate.get("firstName"), user.getFirstName());
+            updateQuery.set(rootUpdate.get("secondName"), user.getSecondName());
+            updateQuery.set(rootUpdate.get("age"), user.getAge());
+            updateQuery.set(rootUpdate.get("changed"), LocalDateTime.now());
+            updateQuery.set(rootUpdate.get("created"), beforeUpdateUserFromDatabase.get().getCreated());
+            updateQuery.set(rootUpdate.get("email"), user.getEmail());
+            updateQuery.where(criteriaBuilder.equal(rootUpdate.get("id"), user.getId()));
 
-            User afterUpdateUserFromDatabase = session.createQuery(hql, User.class).setParameter("id", user.getId()).uniqueResult();
+            session.createMutationQuery(updateQuery).executeUpdate();
+
+            User afterUpdateUserFromDatabase = session.createQuery(getQuery).uniqueResult();
             session.getTransaction().commit();
             return Optional.ofNullable(afterUpdateUserFromDatabase);
         }

@@ -18,6 +18,9 @@
 
         <mapping class="by.tms.model.User"/>
         <mapping class="by.tms.model.Security"/>
+        <mapping class="by.tms.relation.Author"/>
+        <mapping class="by.tms.relation.Book"/>
+        <mapping class="by.tms.relation.Page"/>
     </session-factory>
 </hibernate-configuration>
 

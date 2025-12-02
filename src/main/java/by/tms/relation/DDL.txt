@@ -1,0 +1,46 @@
+create table if not exists author
+(
+	id bigserial not null
+		constraint author_pk
+			primary key,
+	author_name varchar(10)
+);
+
+
+create table if not exists books
+(
+	id bigserial not null
+		constraint books_pk
+			primary key,
+	book_name varchar(10)
+);
+
+
+create table if not exists l_author_book
+(
+	id bigserial not null
+		constraint l_author_book_pk
+			primary key,
+	author_id integer not null
+		constraint l_author_book_author_id_fk
+			references author
+				on update cascade on delete cascade,
+	book_id integer not null
+		constraint l_author_book_books_id_fk
+			references books
+				on update cascade on delete cascade
+);
+
+create table if not exists pages
+(
+	id bigserial not null
+		constraint pages_pk
+			primary key,
+	book_id integer not null
+		constraint page_books_id_fk
+			references books
+				on update cascade on delete cascade,
+	text varchar(50)
+);
+
+
