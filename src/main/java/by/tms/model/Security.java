@@ -33,7 +33,6 @@ public class Security {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-
     @OneToOne(optional = false)
     @JoinColumn(name = "user_id")
     private User user;

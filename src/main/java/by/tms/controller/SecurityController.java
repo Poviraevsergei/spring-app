@@ -1,6 +1,7 @@
 package by.tms.controller;
 
 import by.tms.exception.UsernameExistsException;
+import by.tms.model.Role;
 import by.tms.model.Security;
 import by.tms.model.User;
 import by.tms.model.dto.UserRegistrationDto;
@@ -48,11 +49,27 @@ public class SecurityController {
         return ResponseEntity.notFound().build();
     }
 
+    @GetMapping("/role/{role}")
+    public ResponseEntity<List<Security>> getAllSecuritiesByRole(@PathVariable("role") String role) {
+        try {
+            role = role.toUpperCase();
+            Role.valueOf(role);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        List<Security> allSecuritiesByRole = securityService.getAllSecuritiesByRole(role);
+        if (!allSecuritiesByRole.isEmpty()) {
+            return new ResponseEntity<>(allSecuritiesByRole, HttpStatus.OK);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
 
     @PostMapping("/registration")
     public ResponseEntity<HttpStatusCode> registration(@Valid @RequestBody UserRegistrationDto userRegistrationDto,
                                                        BindingResult bindingResult) throws UsernameExistsException {
-        if (!bindingResult.hasErrors()) {
+        if (bindingResult.hasErrors()) {
             List<String> errMessages = new ArrayList<>();
 
             for (ObjectError objectError : bindingResult.getAllErrors()) {

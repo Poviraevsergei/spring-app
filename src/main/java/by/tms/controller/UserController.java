@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -64,7 +66,8 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<HttpStatusCode> addUser(@RequestBody UserCreateDto user) {
-        if (userService.addUser(user)) {
+        User savedUser =  userService.addUser(user);
+        if (savedUser != null) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.status(HttpStatus.CONFLICT).build();
@@ -86,5 +89,23 @@ public class UserController {
             return new ResponseEntity<>(userOptional.get(), HttpStatus.OK);
         }
         return ResponseEntity.status(HttpStatus.CONFLICT).build();
+    }
+
+    @GetMapping("/sort/{field}")
+    public ResponseEntity<List<User>> getSortedUsersByField(@PathVariable("field") String field, @RequestParam("order") String order) {
+        List<User> users = userService.getSortedUsersByField(field, order);
+        if (users.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/pagination/{page}/{size}")
+    public ResponseEntity<Page<User>> getAllUsersWithPagination(@PathVariable("page") int page, @PathVariable("size") int size) {
+        Page<User> users = userService.getAllUsersWithPagination(page, size);
+        if (users.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(users);
     }
 }
