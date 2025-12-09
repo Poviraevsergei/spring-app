@@ -26,6 +26,12 @@ public class CustomExceptionHandler {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<HttpStatusCode> forbiddenException(ForbiddenException e) {
+        log.warn("Forbidden exception: {}", e.getMessage());
+        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+    }
+
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<HttpStatusCode> userNotFoundException(UserNotFoundException e) {
         log.warn("UserNotFoundException: {}", e.getMessage());

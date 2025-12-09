@@ -1,5 +1,7 @@
 package by.tms.controller;
 
+import by.tms.exception.ForbiddenException;
+import by.tms.exception.UserNotFoundException;
 import by.tms.model.User;
 import by.tms.model.dto.UserCreateDto;
 import by.tms.service.UserService;
@@ -12,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -52,11 +55,20 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
+    @GetMapping("/myself")
+    public ResponseEntity<User> getInfoAboutMe() {
+        Optional<User> user = userService.getInfoAboutMe();
+        if (user.isEmpty()) {
+            throw new UserNotFoundException(-1);
+        }
+        return ResponseEntity.ok(user.get());
+    }
+
     @Operation(method = "GET",
             summary = "Возвращает пользователя по id",
             description = "Делает запрос в БД и возвращает пользователя по id(не проходит фильтрацию)")
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@Parameter(description = "Id пользователя в системе") @PathVariable("id") int id) {
+    public ResponseEntity<User> getUserById(@Parameter(description = "Id пользователя в системе") @PathVariable("id") int id) throws ForbiddenException {
         Optional<User> user = userService.getUserById(id);
         if (user.isPresent()) {
             return new ResponseEntity<>(user.get(), HttpStatus.OK);
@@ -75,7 +87,7 @@ public class UserController {
 
     @Tag(name = "remove-endpoints")
     @DeleteMapping("/{id}")
-    public ResponseEntity<HttpStatusCode> deleteUser(@PathVariable("id") int id) {
+    public ResponseEntity<HttpStatusCode> deleteUser(@PathVariable("id") int id) throws ForbiddenException {
         if (userService.removeUserById(id)) {
             return ResponseEntity.noContent().build();
         }
@@ -83,7 +95,7 @@ public class UserController {
     }
 
     @PutMapping
-    public ResponseEntity<User> updateUser(@RequestBody User user) {
+    public ResponseEntity<User> updateUser(@RequestBody User user) throws ForbiddenException {
         Optional<User> userOptional = userService.updateUser(user);
         if (userOptional.isPresent()) {
             return new ResponseEntity<>(userOptional.get(), HttpStatus.OK);

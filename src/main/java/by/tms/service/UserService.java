@@ -1,12 +1,18 @@
 package by.tms.service;
 
+import by.tms.exception.ForbiddenException;
 import by.tms.exception.UserNotFoundException;
+import by.tms.model.Role;
+import by.tms.model.Security;
 import by.tms.model.User;
 import by.tms.model.dto.UserCreateDto;
+import by.tms.repository.SecurityRepository;
 import by.tms.repository.UserRepository;
+import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -16,17 +22,34 @@ import java.util.Optional;
 @Service
 public class UserService {
     private final UserRepository userRepository;
+    private final SecurityRepository securityRepository;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, SecurityRepository securityRepository) {
         this.userRepository = userRepository;
+        this.securityRepository = securityRepository;
     }
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
-    public Optional<User> getUserById(int id) {
-        return userRepository.findById(id);
+    public Optional<User> getUserById(int id) throws ForbiddenException {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<Security> userSecurity = securityRepository.getByUsername(username);
+        if (userSecurity.isPresent() && (userSecurity.get().getUser().getId() == id || userSecurity.get().getRole().equals(Role.ADMIN))) {
+            return userRepository.findById(id);
+        } else {
+            throw new ForbiddenException();
+        }
+    }
+
+    public Optional<User> getInfoAboutMe() {
+        String userLogin = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<Security> userSecurity = securityRepository.getByUsername(userLogin);
+        if (userSecurity.isPresent()) {
+            return userRepository.findById(userSecurity.get().getUser().getId());
+        }
+        return Optional.empty();
     }
 
     public User addUser(UserCreateDto userDto) {
@@ -40,7 +63,7 @@ public class UserService {
         return userRepository.save(newUser);
     }
 
-    public boolean removeUserById(int id) {
+    public boolean removeUserById(int id) throws ForbiddenException {
         if (getUserById(id).isEmpty()) {
             throw new UserNotFoundException(id);
         }
@@ -49,7 +72,7 @@ public class UserService {
         return userFromDb.isEmpty();
     }
 
-    public Optional<User> updateUser(User user) {
+    public Optional<User> updateUser(User user) throws ForbiddenException {
         Optional<User> userFromDbOptional = getUserById(user.getId());
         if (userFromDbOptional.isPresent()) {
             return Optional.of(userRepository.saveAndFlush(user));
@@ -67,7 +90,7 @@ public class UserService {
     }
 
     //Pagination
-    public Page<User> getAllUsersWithPagination(int page, int size){
+    public Page<User> getAllUsersWithPagination(int page, int size) {
         return userRepository.findAll(PageRequest.of(page, size));
     }
 }
