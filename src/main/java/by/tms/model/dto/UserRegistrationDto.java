@@ -11,10 +11,10 @@ import org.springframework.stereotype.Component;
 public class UserRegistrationDto {
 
     @NotBlank
-    @Size(min = 5, max = 10)
+    @Size(min = 3, max = 10)
     private String username;
 
-    @Pattern(regexp = "[A-z]{6,}")
+    @Pattern(regexp = "[A-z]{4,}")
     private String password;
 
     @CustomAge

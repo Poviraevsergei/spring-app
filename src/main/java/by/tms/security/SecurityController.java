@@ -1,19 +1,17 @@
-package by.tms.controller;
+package by.tms.security;
 
 import by.tms.exception.UsernameExistsException;
 import by.tms.model.Role;
 import by.tms.model.Security;
-import by.tms.model.User;
 import by.tms.model.dto.UserRegistrationDto;
-import by.tms.service.SecurityService;
 import by.tms.service.UserService;
-import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,6 +38,7 @@ public class SecurityController {
         this.userService = userService;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<Security> getSecurityById(@PathVariable("id") int id) {
         Optional<Security> security = securityService.getSecurityById(id);
@@ -65,7 +64,6 @@ public class SecurityController {
         return ResponseEntity.notFound().build();
     }
 
-
     @PostMapping("/registration")
     public ResponseEntity<HttpStatusCode> registration(@Valid @RequestBody UserRegistrationDto userRegistrationDto,
                                                        BindingResult bindingResult) throws UsernameExistsException {
@@ -79,6 +77,15 @@ public class SecurityController {
             throw new ValidationException(String.valueOf(errMessages));
         }
         if (securityService.registration(userRegistrationDto)) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.status(HttpStatus.CONFLICT).build();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/{id}/admin")
+    public ResponseEntity<HttpStatusCode> setRoleToAdmin(@PathVariable Integer id) {
+        if (securityService.setRoleToAdmin(id)) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.status(HttpStatus.CONFLICT).build();

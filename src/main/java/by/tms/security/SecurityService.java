@@ -1,5 +1,6 @@
-package by.tms.service;
+package by.tms.security;
 
+import by.tms.exception.UserNotFoundException;
 import by.tms.exception.UsernameExistsException;
 import by.tms.model.Role;
 import by.tms.model.Security;
@@ -8,7 +9,7 @@ import by.tms.model.dto.UserRegistrationDto;
 import by.tms.repository.SecurityRepository;
 import by.tms.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.HibernateException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,10 +23,13 @@ import java.util.Optional;
 public class SecurityService {
     private final UserRepository userRepository;
     private final SecurityRepository securityRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public SecurityService(UserRepository userRepository, SecurityRepository securityRepository) {
+    public SecurityService(UserRepository userRepository, SecurityRepository securityRepository,
+                           BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userRepository = userRepository;
         this.securityRepository = securityRepository;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     @Transactional(rollbackFor = {Exception.class},
@@ -49,7 +53,7 @@ public class SecurityService {
             Security security = new Security();
             security.setUser(user);
             security.setUsername(userRegistrationDto.getUsername());
-            security.setPassword(userRegistrationDto.getPassword());
+            security.setPassword(bCryptPasswordEncoder.encode(userRegistrationDto.getPassword()));
             security.setRole(Role.USER);
 
             securityRepository.save(security);
@@ -62,6 +66,13 @@ public class SecurityService {
 
     public Optional<Security> getSecurityById(int id) {
         return securityRepository.findById(id);
+    }
+
+    public Boolean setRoleToAdmin(int id) {
+        if (!userRepository.existsById(id)) {
+            throw new UserNotFoundException(id);
+        }
+        return securityRepository.setAdminRoleByUserId(id) > 0;
     }
 
     public boolean isUsernameUsed(String username) {
