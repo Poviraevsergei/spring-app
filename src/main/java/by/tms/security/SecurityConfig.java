@@ -29,6 +29,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers(pathBuilder.matcher(HttpMethod.POST, "/security/registration")).permitAll()
+                                .requestMatchers(pathBuilder.matcher(HttpMethod.POST, "/security/jwt")).permitAll()
                                 .requestMatchers(pathBuilder.matcher(HttpMethod.GET, "/user")).hasRole(Role.ADMIN.name())
                                 .requestMatchers(pathBuilder.matcher(HttpMethod.GET, "/user/sort/**")).hasRole(Role.ADMIN.name())
                                 .requestMatchers(pathBuilder.matcher(HttpMethod.GET, "/user/pagination/**")).hasRole(Role.ADMIN.name())
@@ -45,4 +46,9 @@ public class SecurityConfig {
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+
+    //TODO: 1. генерация токена
+    //TODO: 2. фильтр для валидации токена
+    //TODO: 3. Swagger (JWT)
 }

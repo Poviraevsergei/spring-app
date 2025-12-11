@@ -1,8 +1,11 @@
 package by.tms.security;
 
 import by.tms.exception.UsernameExistsException;
+import by.tms.exception.WrongPasswordException;
 import by.tms.model.Role;
 import by.tms.model.Security;
+import by.tms.model.dto.AuthRequest;
+import by.tms.model.dto.AuthResponse;
 import by.tms.model.dto.UserRegistrationDto;
 import by.tms.service.UserService;
 import jakarta.validation.Valid;
@@ -36,6 +39,18 @@ public class SecurityController {
     public SecurityController(SecurityService securityService, UserService userService) {
         this.securityService = securityService;
         this.userService = userService;
+    }
+
+    @PostMapping("/jwt")
+    public ResponseEntity<AuthResponse> generateJwt(@RequestBody AuthRequest authRequest) throws WrongPasswordException {
+        if (authRequest == null || authRequest.getUsername() == null || authRequest.getPassword() == null) {
+            throw new ValidationException("Invalid request");
+        }
+        Optional<String> jwt = securityService.generateJwt(authRequest);
+        if (jwt.isPresent()) {
+            return new ResponseEntity<>(new AuthResponse(jwt.get()), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

@@ -1,14 +1,19 @@
 package by.tms.security;
 
+import by.tms.exception.ForbiddenException;
 import by.tms.exception.UserNotFoundException;
 import by.tms.exception.UsernameExistsException;
+import by.tms.exception.WrongPasswordException;
 import by.tms.model.Role;
 import by.tms.model.Security;
 import by.tms.model.User;
+import by.tms.model.dto.AuthRequest;
 import by.tms.model.dto.UserRegistrationDto;
 import by.tms.repository.SecurityRepository;
 import by.tms.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -23,13 +28,15 @@ import java.util.Optional;
 public class SecurityService {
     private final UserRepository userRepository;
     private final SecurityRepository securityRepository;
+    private final JwtUtils jwtUtils;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     public SecurityService(UserRepository userRepository, SecurityRepository securityRepository,
-                           BCryptPasswordEncoder bCryptPasswordEncoder) {
+                           BCryptPasswordEncoder bCryptPasswordEncoder, JwtUtils jwtUtils) {
         this.userRepository = userRepository;
         this.securityRepository = securityRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.jwtUtils = jwtUtils;
     }
 
     @Transactional(rollbackFor = {Exception.class},
@@ -81,5 +88,18 @@ public class SecurityService {
 
     public List<Security> getAllSecuritiesByRole(String role) {
         return securityRepository.customFindByRole(role);
+    }
+
+    public Optional<String> generateJwt(AuthRequest request) throws WrongPasswordException {
+        Optional<Security> security = securityRepository.getByUsername(request.getUsername());
+        if (security.isEmpty()) {
+            throw new UsernameNotFoundException(request.getUsername());
+        }
+
+        if (!bCryptPasswordEncoder.matches(request.getPassword(), security.get().getPassword())){
+            throw new WrongPasswordException(request.getPassword());
+        }
+
+        return Optional.ofNullable(jwtUtils.generateToken(security.get().getUsername()));
     }
 }
