@@ -14,12 +14,6 @@ create table public.users
 alter table public.users
     owner to postgres;
 
-create trigger add_user_trg
-    after insert
-    on public.users
-    for each row
-execute procedure public.add_to_log();
-
 create table public.security
 (
     id       bigserial

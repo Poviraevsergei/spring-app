@@ -13,7 +13,7 @@ import java.util.Optional;
 @Service
 public class CustomUserDetailService implements UserDetailsService {
 
-    private SecurityRepository securityRepository;
+    private final SecurityRepository securityRepository;
 
     public CustomUserDetailService(SecurityRepository securityRepository) {
         this.securityRepository = securityRepository;
