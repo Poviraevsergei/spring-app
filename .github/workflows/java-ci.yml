@@ -10,39 +10,38 @@ on:
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-  steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Set up JDK 21 with Maven
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
 
-    - name: Set up JDK 21 with Maven
-      uses: actions/setup-java@v3
-      with:
-        java-version: '21'
-        distribution: 'temurin'
-        cache: maven
+      - name: Run tests
+        run: mvn clean test
 
-    - name: Run tests
-      run: mvn clean test
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-reports
+          path: target/surefire-reports/
+          if-no-files-found: warn
 
-    - name: Upload test reports
-      if: failure()
-      uses: actions/upload-artifacts@v3
-      with:
-        name: test-reports
-        path: target/surfire-reports/
-        if-no-files-found: warn
-
-    - name: Build and upload Jar
-      if: github.ref == 'refs/heads/master' && success()
-      run: |
+      - name: Build and upload Jar
+        if: github.ref == 'refs/heads/master' && success()
+        run: |
           mvn clean package -DskipTests
           ls -la target/*.jar || echo "No Jar found!"
 
-    - name: Upload production artifact
-      if: github.ref == 'refs/heads/master' && success()
-      uses: actions/upload-artifact@v3
-      with:
-        name: spring-app-git
-        path: target/*.jar
-        if-no-files-found: error
+      - name: Upload production artifact
+        if: github.ref == 'refs/heads/master' && success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: spring-app-git
+          path: target/*.jar
+          if-no-files-found: error
