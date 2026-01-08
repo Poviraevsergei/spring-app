@@ -79,7 +79,7 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<HttpStatusCode> addUser(@RequestBody UserCreateDto user) {
-        User savedUser =  userService.addUser(user);
+        User savedUser = userService.addUser(user);
         if (savedUser != null) {
             return ResponseEntity.noContent().build();
         }
